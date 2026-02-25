@@ -1,0 +1,25 @@
+2026-02-19 20:41:01.551527 - Rt joined the chat
+2026-02-19 20:41:04.308450 - Rt left chat. Duration: 0:00:02.758014
+2026-02-19 20:41:11.612360 - Hm joined the chat
+2026-02-19 20:41:18.095369 - Rt sent message: Hiii
+2026-02-19 20:41:24.567629 - Hm sent message: Hello
+2026-02-19 20:41:50.466246 - Rt uploaded file: Thumbnale.jpg
+2026-02-19 20:46:09.763184 - Hm left chat. Duration: 0:04:58.151099
+2026-02-19 20:46:31.485462 - hm joined the chat
+2026-02-19 20:46:35.626030 - hm left chat. Duration: 0:00:04.140885
+2026-02-19 20:46:42.583152 - ta joined the chat
+2026-02-19 20:46:49.816100 - ta left chat. Duration: 0:00:07.233034
+2026-02-19 20:46:54.527395 - Tm joined the chat
+2026-02-19 20:46:59.706416 - Tm left chat. Duration: 0:00:05.178951
+2026-02-19 20:47:05.869764 - Pb joined the chat
+2026-02-19 20:47:12.410941 - Tm sent message: Hiii
+2026-02-19 20:47:17.079567 - Pb sent message: Hello
+2026-02-19 20:47:43.018736 - Pb sent message: Hiiihow are youhdks
+2026-02-19 20:52:14.285856 - Pb left chat. Duration: 0:05:08.416367
+2026-02-19 20:52:26.103395 - Ft joined the chat
+2026-02-19 20:52:35.345424 - Hm joined the chat
+2026-02-19 20:52:41.012792 - Ft sent message: Hiii
+2026-02-19 20:52:46.125205 - Hm sent message: Hello
+2026-02-19 20:52:51.729591 - Hm sent message: who are you
+2026-02-19 21:00:57.602410 - Ft left chat. Duration: 0:08:31.499101
+2026-02-19 21:00:57.604627 - Hm left chat. Duration: 0:08:22.259797

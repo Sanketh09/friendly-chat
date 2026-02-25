@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Advanced Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+}
+
+/* THEME */
+.dark .chat-container {
+    background: rgba(20,20,20,0.75);
+    backdrop-filter: blur(20px);
+}
+
+.light .chat-container {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+}
+
+.chat-container {
+    width: 100%;
+    max-width: 520px;
+    height: 100dvh;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    transition: 0.3s ease;
+}
+
+/* HEADER */
+.chat-header {
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.chat-header button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* ONLINE USERS */
+.online-users {
+    font-size: 12px;
+    padding: 5px 15px;
+    opacity: 0.8;
+}
+
+/* PINNED */
+.pinned {
+    padding: 8px 15px;
+    font-size: 12px;
+    background: rgba(255,215,0,0.15);
+    border-left: 3px solid gold;
+}
+
+/* CHAT AREA */
+.chat-box {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* MESSAGE */
+.message {
+    max-width: 75%;
+    padding: 12px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    position: relative;
+    animation: fadeIn 0.25s ease;
+    line-height: 1.4;
+}
+
+/* MESSAGE SIDES */
+.me {
+    align-self: flex-end;
+    background: linear-gradient(135deg,#4facfe,#00f2fe);
+    color: white;
+}
+
+.other {
+    align-self: flex-start;
+    background: rgba(255,255,255,0.15);
+}
+
+/* ADMIN HIGHLIGHT */
+.message[style*="gold"] {
+    box-shadow: 0 0 10px gold;
+}
+
+/* REPLY */
+.reply-preview {
+    font-size: 11px;
+    opacity: 0.7;
+    border-left: 3px solid #00bcd4;
+    padding-left: 6px;
+    margin-bottom: 4px;
+}
+
+/* TIME */
+.timestamp {
+    font-size: 10px;
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+/* INPUT */
+.chat-input {
+    display: flex;
+    padding: 15px;
+    gap: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+.chat-input button {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    background: linear-gradient(135deg,#4facfe,#00f2fe);
+    color: white;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.chat-input button:hover {
+    transform: scale(1.05);
+}
+
+/* ACTIONS */
+.action-buttons {
+    font-size: 11px;
+    margin-top: 5px;
+    opacity: 0.7;
+}
+
+.action-buttons span {
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+/* TYPING */
+.typing {
+    font-size: 12px;
+    padding: 5px 15px;
+    opacity: 0.7;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(5px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+@media (max-width: 768px) {
+
+    .chat-container {
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+    }
+
+    .chat-box {
+        padding: 10px;
+    }
+
+    .chat-input {
+        padding: 10px;
+    }
+
+    .message {
+        max-width: 85%;
+        font-size: 13px;
+    }
+
+    .chat-header {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+}
+
+
+</style>
+</head>
+
+<body class="dark">
+
+<div class="chat-container">
+
+    <div class="chat-header">
+    <div>
+        Private Chat ({{ username }})
+    </div>
+    <div>
+        <button onclick="toggleTheme()">🌙</button>
+        <a href="/logout" style="color:white;margin-left:15px;text-decoration:none;">
+            🚪 Logout
+        </a>
+    </div>
+</div>
+
+
+    <div class="online-users" id="users"></div>
+    <div class="pinned" id="pinned"></div>
+
+    <div class="chat-box" id="chat-box"></div>
+    <div class="typing" id="typing"></div>
+
+    <div class="chat-input">
+    <input id="msg" placeholder="Type a message...">
+    <input type="file" id="fileInput" style="display:none" onchange="sendFile()">
+    <button onclick="document.getElementById('fileInput').click()">📎</button>
+    <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+var socket = io();
+var username = "{{ username }}";
+var role = "{{ role }}";
+var replyTo = null;
+
+socket.on("connect", function() {
+    socket.emit("join");
+});
+
+
+function getTime() {
+    const now = new Date();
+    return now.getHours().toString().padStart(2,'0') + ":" +
+           now.getMinutes().toString().padStart(2,'0');
+}
+
+socket.on("update_users", function(users){
+    document.getElementById("users").innerHTML =
+    "Online (" + users.length + "): " + users.join(", ");
+});
+
+socket.on("receive_message", function(data){
+    var div = document.createElement("div");
+    if (data.sender === username) {
+    div.className = "message me";
+} else {
+    div.className = "message other";
+}
+
+// 👇 Add role highlight
+if (data.role === "admin") {
+    div.style.border = "2px solid gold";
+}
+
+    div.id = data.id;
+
+    var replyHTML = "";
+    if(data.reply){
+        replyHTML = "<div class='reply-preview'>Reply to: " + data.reply + "</div>";
+    }
+
+    div.innerHTML =
+        replyHTML +
+        "<strong>" + data.sender + (data.role === "admin" ? " 👑" : "") + "</strong><br>" +
+        data.text +
+        "<div class='timestamp'>" + data.time + "</div>" +
+        "<div class='action-buttons'>" +
+        "<span onclick='setReply(\""+data.text+"\")'>↩ Reply</span> | " +
+        "<span onclick='pinMessage(\""+data.text+"\")'>📌 Pin</span>" +
+        "</div>";
+
+    document.getElementById("chat-box").appendChild(div);
+    document.getElementById("chat-box").scrollTop =
+        document.getElementById("chat-box").scrollHeight;
+});
+
+function sendMessage(){
+    var input = document.getElementById("msg");
+
+    if(input.value.trim() !== ""){
+        socket.emit("send_message",{
+    text: input.value,
+    time: getTime(),
+    reply: replyTo
+});
+
+
+        replyTo = null;
+        input.value = "";
+    }
+}
+
+document.getElementById("msg").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+function setReply(text){
+    replyTo = text;
+    document.getElementById("msg").placeholder =
+        "Replying to: " + text;
+}
+
+function pinMessage(text){
+    socket.emit("pin_message",{ text: text });
+}
+
+socket.on("show_pinned", function(data){
+    document.getElementById("pinned").innerHTML =
+        "📌 Pinned: " + data.text;
+});
+
+function sendTyping(){
+    socket.emit("typing",{ sender: username });
+}
+
+socket.on("show_typing", function(data){
+    if(data.sender !== username){
+        document.getElementById("typing").innerHTML =
+            data.sender + " is typing...";
+        setTimeout(()=>{ document.getElementById("typing").innerHTML=""; },1500);
+    }
+});
+
+function toggleTheme(){
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+}
+
+function sendFile() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        socket.emit("send_file", {
+            sender: username,
+            fileName: file.name,
+            fileType: file.type,
+            fileData: e.target.result
+        });
+    };
+
+    reader.readAsDataURL(file);
+fileInput.value = "";
+}
+
+socket.on("receive_file", function(data){
+    var div = document.createElement("div");
+    div.className = (data.sender === username) ? "message me" : "message other";
+
+    let content = "<strong>" + data.sender + "</strong><br>";
+
+    if(data.fileType.startsWith("image/")){
+        content += "<img src='" + data.fileData + "' style='max-width:150px;border-radius:8px;'>";
+    } else {
+        content += "<a href='" + data.fileData + "' download='" + data.fileName + "' style='color:#00bcd4;'>📁 " + data.fileName + "</a>";
+    }
+
+    div.innerHTML = content;
+
+    document.getElementById("chat-box").appendChild(div);
+    document.getElementById("chat-box").scrollTop =
+        document.getElementById("chat-box").scrollHeight;
+});
+
+
+</script>
+
+</body>
+</html>

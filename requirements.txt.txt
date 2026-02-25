@@ -1,0 +1,6 @@
+Flask
+Flask-SocketIO
+Flask-Login
+bcrypt
+eventlet
+gunicorn
