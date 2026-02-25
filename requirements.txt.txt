@@ -1,6 +1,6 @@
-Flask
-Flask-SocketIO
-Flask-Login
+flask
+flask-socketio
+flask-login
 bcrypt
-eventlet
 gunicorn
+eventlet
