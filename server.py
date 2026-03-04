@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS messages (
     # Create default admin if not exists
     c.execute("SELECT * FROM users WHERE username='admin'")
     if not c.fetchone():
-        hashed = bcrypt.hashpw("1907".encode(), bcrypt.gensalt()).decode()
+        hashed = bcrypt.hashpw("Sanketh@".encode(), bcrypt.gensalt()).decode()
         c.execute("""
             INSERT INTO users (username,password,role,approved,banned)
             VALUES (?,?,?,?,?)
