@@ -21,7 +21,7 @@ socketio = SocketIO(
     app,
     cors_allowed_origins="*",
     manage_session=False,
-    max_http_buffer_size=100 * 1024 * 1024
+    max_http_buffer_size=1000 * 1024 * 1024
 )
 
 login_manager = LoginManager()
@@ -33,7 +33,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "txt", "doc", "docx"}
 MAX_MESSAGE_LENGTH = 1000
-MAX_FILE_SIZE = 100 * 1024 * 1024
+MAX_FILE_SIZE = 500 * 1024 * 1024
 
 online_users = {}
 
@@ -309,6 +309,20 @@ def join():
 
     recent_messages = load_recent_messages()
     emit("chat_history", recent_messages)
+
+
+@socketio.on("get_pending_users")
+def get_pending_users():
+    if not current_user.is_authenticated or current_user.role != "admin":
+        return
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT id, username FROM users WHERE approved = 0 AND role = 'user'")
+    pending = [dict(row) for row in c.fetchall()]
+    conn.close()
+
+    emit("pending_update", pending)
 
 
 @socketio.on("disconnect")
