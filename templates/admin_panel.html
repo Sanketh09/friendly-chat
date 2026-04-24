@@ -28,24 +28,14 @@
       border-radius: 22px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.25);
     }
-    .sidebar {
-      padding: 22px;
-    }
+    .sidebar { padding: 22px; }
     .main {
       min-height: 85vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-    h1, h2, h3, h4, p {
-      margin-top: 0;
-    }
-    .brand {
-      margin-bottom: 24px;
-    }
-    .section {
-      margin-bottom: 24px;
-    }
+    .section { margin-bottom: 24px; }
     .section h4 {
       font-size: 13px;
       text-transform: uppercase;
@@ -61,9 +51,6 @@
       padding: 10px 0;
       border-bottom: 1px solid rgba(255,255,255,0.12);
       word-break: break-word;
-    }
-    .user-item:last-child, .file-item:last-child {
-      border-bottom: none;
     }
     .actions {
       display: flex;
@@ -84,26 +71,16 @@
     .btn-approve { background: #16a34a; }
     .btn-deny { background: #dc2626; }
     .btn-ban { background: #d97706; }
-    .btn-light {
-      background: rgba(255,255,255,0.18);
-    }
-    .btn-danger {
-      background: #ef4444;
-    }
-    .file-link {
-      color: #fff;
-      text-decoration: none;
-    }
-    .file-link:hover {
-      text-decoration: underline;
-    }
+    .btn-light { background: rgba(255,255,255,0.18); }
+    .btn-danger { background: #ef4444; }
+    .file-link { color: #fff; text-decoration: none; }
+    .file-link:hover { text-decoration: underline; }
     .topbar {
       padding: 20px 24px;
       border-bottom: 1px solid rgba(255,255,255,0.12);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
     }
     .chat-box {
       flex: 1;
@@ -130,23 +107,6 @@
       font-size: 12px;
       opacity: 0.8;
     }
-    .reply-box {
-      margin-bottom: 8px;
-      padding-left: 10px;
-      border-left: 3px solid #7dd3fc;
-      font-size: 12px;
-      opacity: 0.9;
-    }
-    .file-preview img {
-      max-width: 220px;
-      border-radius: 12px;
-      margin-top: 8px;
-    }
-    .file-preview a {
-      color: #93c5fd;
-      text-decoration: none;
-      font-weight: 700;
-    }
     .chat-input {
       border-top: 1px solid rgba(255,255,255,0.12);
       padding: 16px;
@@ -162,9 +122,7 @@
       border-radius: 999px;
       font-size: 14px;
     }
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
     .footer-links {
       margin-top: 20px;
       display: flex;
@@ -173,25 +131,17 @@
       flex-wrap: wrap;
     }
     @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-      .main {
-        min-height: 70vh;
-      }
-      .message {
-        max-width: 90%;
-      }
+      .layout { grid-template-columns: 1fr; }
+      .main { min-height: 70vh; }
+      .message { max-width: 90%; }
     }
   </style>
 </head>
 <body>
   <div class="layout">
     <aside class="panel sidebar">
-      <div class="brand">
-        <h2>👑 Admin Panel</h2>
-        <p>Welcome, {{ username }}</p>
-      </div>
+      <h2>👑 Admin Panel</h2>
+      <p>Welcome, {{ username }}</p>
 
       <div class="section">
         <h4>Online Users</h4>
@@ -222,17 +172,15 @@
 
       <div class="section">
         <h4>Uploaded Files</h4>
-        <div>
-          {% if files %}
-            {% for file in files %}
-              <div class="file-item">
-                <a class="file-link" href="/uploads/{{ file }}" target="_blank" rel="noopener noreferrer">{{ file }}</a>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p>No uploaded files</p>
-          {% endif %}
-        </div>
+        {% if files %}
+          {% for file in files %}
+            <div class="file-item">
+              <a class="file-link" href="/uploads/{{ file }}" target="_blank" rel="noopener noreferrer">{{ file }}</a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No uploaded files</p>
+        {% endif %}
       </div>
 
       <div class="footer-links">
@@ -244,7 +192,7 @@
     <main class="panel main">
       <div class="topbar">
         <strong>Live Admin Chat</strong>
-        <span id="status-text">Connected room</span>
+        <span>Admin view</span>
       </div>
 
       <div class="chat-box" id="chat-box"></div>
@@ -264,6 +212,14 @@
 
     socket.on("connect", function () {
       socket.emit("join");
+    });
+
+    socket.on("chat_history", function (messages) {
+      const box = document.getElementById("chat-box");
+      box.innerHTML = "";
+      messages.forEach(function (msg) {
+        appendMessage(msg);
+      });
     });
 
     socket.on("update_users", function (users) {
@@ -323,10 +279,13 @@
       if (msg) msg.remove();
     });
 
+    socket.on("file_error", function (data) {
+      alert(data.error || "Upload failed");
+    });
+
     function sendMessage() {
       const input = document.getElementById("msg");
       const text = input.value.trim();
-
       if (!text) return;
 
       socket.emit("send_message", {
@@ -367,13 +326,7 @@
       div.className = "message" + (data.role === "admin" ? " admin" : "");
       div.id = data.id;
 
-      let replyHtml = "";
-      if (data.reply) {
-        replyHtml = `<div class="reply-box">Reply to: ${escapeHtml(data.reply)}</div>`;
-      }
-
       div.innerHTML = `
-        ${replyHtml}
         <strong>${escapeHtml(data.sender)}${data.role === "admin" ? " 👑" : ""}</strong>
         <div>${escapeHtml(data.text || "")}</div>
         <div class="meta">${escapeHtml(data.time || "")}</div>
@@ -388,17 +341,16 @@
       const div = document.createElement("div");
       div.className = "message" + (data.role === "admin" ? " admin" : "");
 
-      let content = `<strong>${escapeHtml(data.sender)}</strong><div class="file-preview">`;
+      let html = `<strong>${escapeHtml(data.sender)}${data.role === "admin" ? " 👑" : ""}</strong>`;
 
       if (data.fileType && data.fileType.startsWith("image/")) {
-        content += `<img src="${data.fileData}" alt="Uploaded image">`;
+        html += `<div><img src="${data.fileData}" alt="Uploaded image" style="max-width:220px;border-radius:12px;margin-top:8px;"></div>`;
       } else {
-        const label = data.originalName || data.fileName || "Download file";
-        content += `<a href="${data.fileData}" download="${escapeHtml(label)}">📁 ${escapeHtml(label)}</a>`;
+        const label = data.originalName || data.fileName || "File";
+        html += `<div><a href="${data.fileData}" download="${escapeHtml(label)}" style="color:#93c5fd;">📁 ${escapeHtml(label)}</a></div>`;
       }
 
-      content += `</div>`;
-      div.innerHTML = content;
+      div.innerHTML = html;
 
       const chat = document.getElementById("chat-box");
       chat.appendChild(div);
