@@ -1,386 +1,415 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin Control Center</title>
-<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-
-<style>
-:root {
-    --glass-bg: rgba(255,255,255,0.15);
-    --glass-border: rgba(255,255,255,0.3);
-    --text: #fff;
-}
-
-body {
-    margin:0;
-    font-family:Segoe UI, sans-serif;
-    background: linear-gradient(135deg,#667eea,#764ba2);
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.wrapper {
-    width:95%;
-    max-width:1400px;
-    height:90vh;
-    display:flex;
-    backdrop-filter: blur(20px);
-    background: var(--glass-bg);
-    border:1px solid var(--glass-border);
-    border-radius:20px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.3);
-    overflow:hidden;
-    color:var(--text);
-}
-
-/* Sidebar */
-.sidebar {
-    width:300px;
-    padding:25px;
-    border-right:1px solid var(--glass-border);
-    display:flex;
-    flex-direction:column;
-}
-
-.sidebar h2 {
-    margin-bottom:20px;
-}
-
-.section {
-    margin-bottom:25px;
-}
-
-.section h4 {
-    font-size:13px;
-    opacity:0.8;
-    margin-bottom:8px;
-}
-
-.user-item {
-    display:flex;
-    justify-content:space-between;
-    padding:6px 0;
-    font-size:13px;
-}
-
-
-/* Main */
-.main {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-}
-
-.topbar {
-    padding:20px;
-    font-weight:600;
-    border-bottom:1px solid var(--glass-border);
-}
-
-.chat-box {
-    flex:1;
-    padding:25px;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-}
-
-.message {
-    background: rgba(255,255,255,0.2);
-    padding:12px 15px;
-    border-radius:12px;
-    max-width:60%;
-    backdrop-filter: blur(10px);
-    animation:fadeIn 0.3s ease;
-}
-
-.admin-badge {
-    background:gold;
-    color:black;
-    font-size:10px;
-    padding:2px 6px;
-    border-radius:4px;
-    margin-left:5px;
-}
-
-.delete-btn {
-    font-size:11px;
-    color:#ff6b6b;
-    cursor:pointer;
-}
-
-.input-area {
-    padding:20px;
-    border-top:1px solid var(--glass-border);
-    display:flex;
-    gap:10px;
-}
-
-.input-area input {
-    flex:1;
-    padding:12px 15px;
-    border-radius:25px;
-    border:none;
-    outline:none;
-}
-
-.input-area button {
-    padding:10px 20px;
-    border:none;
-    border-radius:25px;
-    background:white;
-    cursor:pointer;
-}
-
-
-/* Professional Action Buttons */
-.action-buttons {
-    display:flex;
-    gap:6px;
-}
-
-/* Base Button */
-.btn {
-    padding:5px 12px;
-    border-radius:20px;
-    font-size:11px;
-    text-decoration:none;
-    font-weight:600;
-    transition:0.2s ease;
-}
-
-/* Accept Button */
-.btn-accept {
-    background:linear-gradient(135deg,#22c55e,#16a34a);
-    color:white;
-}
-.btn-accept:hover {
-    transform:scale(1.05);
-    box-shadow:0 5px 12px rgba(34,197,94,0.4);
-}
-
-/* Reject Button */
-.btn-reject {
-    background:linear-gradient(135deg,#ef4444,#dc2626);
-    color:white;
-}
-.btn-reject:hover {
-    transform:scale(1.05);
-    box-shadow:0 5px 12px rgba(239,68,68,0.4);
-}
-
-/* Ban Button */
-.btn-ban {
-    background:linear-gradient(135deg,#f59e0b,#d97706);
-    color:white;
-}
-.btn-ban:hover {
-    transform:scale(1.05);
-    box-shadow:0 5px 12px rgba(245,158,11,0.4);
-}
-
-
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(8px);}
-    to {opacity:1; transform:translateY(0);}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | Friendly Chat</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+    .layout {
+      width: min(1200px, 95%);
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+    .panel {
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(18px);
+      border-radius: 22px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+    .sidebar {
+      padding: 22px;
+    }
+    .main {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    h1, h2, h3, h4, p {
+      margin-top: 0;
+    }
+    .brand {
+      margin-bottom: 24px;
+    }
+    .section {
+      margin-bottom: 24px;
+    }
+    .section h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.85;
+      margin-bottom: 10px;
+    }
+    .user-item, .file-item, .online-user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      word-break: break-word;
+    }
+    .user-item:last-child, .file-item:last-child {
+      border-bottom: none;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-approve { background: #16a34a; }
+    .btn-deny { background: #dc2626; }
+    .btn-ban { background: #d97706; }
+    .btn-light {
+      background: rgba(255,255,255,0.18);
+    }
+    .btn-danger {
+      background: #ef4444;
+    }
+    .file-link {
+      color: #fff;
+      text-decoration: none;
+    }
+    .file-link:hover {
+      text-decoration: underline;
+    }
+    .topbar {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .message {
+      max-width: 75%;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.08);
+      word-wrap: break-word;
+    }
+    .message.admin {
+      border: 1px solid rgba(255,215,0,0.5);
+      box-shadow: 0 0 16px rgba(255,215,0,0.18);
+    }
+    .meta {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    .reply-box {
+      margin-bottom: 8px;
+      padding-left: 10px;
+      border-left: 3px solid #7dd3fc;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .file-preview img {
+      max-width: 220px;
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+    .file-preview a {
+      color: #93c5fd;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .chat-input {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 13px 15px;
+      border: none;
+      outline: none;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .hidden {
+      display: none;
+    }
+    .footer-links {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .main {
+        min-height: 70vh;
+      }
+      .message {
+        max-width: 90%;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="layout">
+    <aside class="panel sidebar">
+      <div class="brand">
+        <h2>👑 Admin Panel</h2>
+        <p>Welcome, {{ username }}</p>
+      </div>
 
-<div class="wrapper">
+      <div class="section">
+        <h4>Online Users</h4>
+        <div id="online-users">
+          <div class="online-user">Waiting for users...</div>
+        </div>
+      </div>
 
-<div class="sidebar">
+      <div class="section">
+        <h4>Pending Requests</h4>
+        <div id="pending-list">
+          {% if pending %}
+            {% for user in pending %}
+              <div class="user-item">
+                <span>{{ user[1] }}</span>
+                <div class="actions">
+                  <a href="/approve/{{ user[0] }}" class="btn btn-approve">Approve</a>
+                  <a href="/deny/{{ user[0] }}" class="btn btn-deny">Deny</a>
+                  <a href="/ban/{{ user[0] }}" class="btn btn-ban">Ban</a>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No pending users</p>
+          {% endif %}
+        </div>
+      </div>
 
-<h2>👑 Admin Panel</h2>
+      <div class="section">
+        <h4>Uploaded Files</h4>
+        <div>
+          {% if files %}
+            {% for file in files %}
+              <div class="file-item">
+                <a class="file-link" href="/uploads/{{ file }}" target="_blank" rel="noopener noreferrer">{{ file }}</a>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No uploaded files</p>
+          {% endif %}
+        </div>
+      </div>
 
-<div class="section">
-<h4>ONLINE USERS</h4>
-<div id="online-users"></div>
-</div>
+      <div class="footer-links">
+        <a href="/" class="btn btn-light">Home</a>
+        <a href="/logout" class="btn btn-danger">Logout</a>
+      </div>
+    </aside>
 
-<div class="section">
-<h4>PENDING REQUESTS</h4>
-<div id="pending-list">
-{% for user in pending %}
-<div class="user-item">
-{{ user[1] }}
-<div class="action-buttons">
-<a href="/approve/{{ user[0] }}" class="btn btn-accept">Accept</a>
-<a href="/deny/{{ user[0] }}" class="btn btn-reject">Reject</a>
-<a href="/ban/{{ user[0] }}" class="btn btn-ban">Ban</a>
-</div>
-</div>
-{% endfor %}
-</div>
-</div>
+    <main class="panel main">
+      <div class="topbar">
+        <strong>Live Admin Chat</strong>
+        <span id="status-text">Connected room</span>
+      </div>
 
-<a href="/logout" style="margin-top:auto;color:white;text-decoration:none;">Logout</a>
+      <div class="chat-box" id="chat-box"></div>
 
-</div>
+      <div class="chat-input">
+        <input id="msg" type="text" placeholder="Type a message...">
+        <input type="file" id="fileInput" class="hidden" onchange="sendFile()">
+        <button class="btn btn-light" type="button" onclick="document.getElementById('fileInput').click()">📎</button>
+        <button class="btn btn-approve" type="button" onclick="sendMessage()">Send</button>
+      </div>
+    </main>
+  </div>
 
-<div class="main">
+  <script>
+    const socket = io();
+    const username = "{{ username }}";
 
-<div class="topbar">
-Live Admin Chat
-</div>
+    socket.on("connect", function () {
+      socket.emit("join");
+    });
 
-<div class="chat-box" id="chat-box"></div>
+    socket.on("update_users", function (users) {
+      const container = document.getElementById("online-users");
+      container.innerHTML = "";
 
-<div class="input-area">
-<input id="msg" placeholder="Type message...">
+      if (!users || users.length === 0) {
+        container.innerHTML = '<div class="online-user">No users online</div>';
+        return;
+      }
 
-<input type="file" id="fileInput" style="display:none" onchange="sendFile()">
-
-<button onclick="document.getElementById('fileInput').click()">📎</button>
-
-<button onclick="sendMessage()">Send</button>
-</div>
-
-</div>
-
-</div>
-
-<script>
-var socket = io();
-var username = "{{ username }}";
-
-socket.on("connect", function(){
-    socket.emit("join");
-});
-
-socket.on("update_users", function(users){
-    let container = document.getElementById("online-users");
-    container.innerHTML = "";
-    users.forEach(u => {
-        let div = document.createElement("div");
-        div.textContent = u;
+      users.forEach(function (user) {
+        const div = document.createElement("div");
+        div.className = "online-user";
+        div.textContent = user;
         container.appendChild(div);
+      });
     });
-});
 
-/* 🔥 Live Pending Auto Update */
-socket.on("pending_update", function(pending){
-    let container = document.getElementById("pending-list");
-    container.innerHTML = "";
-    pending.forEach(user => {
-        container.innerHTML += `
-        <div class="user-item">
-            ${user[1]}
-            <span>
-                <a href="/approve/${user[0]}" class="btn btn-accept">Accept</a>
-<a href="/deny/${user[0]}" class="btn btn-reject">Reject</a>
-<a href="/ban/${user[0]}" class="btn btn-ban">Ban</a>
-            </span>
-        </div>`;
+    socket.on("pending_update", function (pending) {
+      const container = document.getElementById("pending-list");
+      container.innerHTML = "";
+
+      if (!pending || pending.length === 0) {
+        container.innerHTML = "<p>No pending users</p>";
+        return;
+      }
+
+      pending.forEach(function (user) {
+        const userId = user.id ?? user[0];
+        const userName = user.username ?? user[1];
+
+        const row = document.createElement("div");
+        row.className = "user-item";
+        row.innerHTML = `
+          <span>${escapeHtml(userName)}</span>
+          <div class="actions">
+            <a href="/approve/${userId}" class="btn btn-approve">Approve</a>
+            <a href="/deny/${userId}" class="btn btn-deny">Deny</a>
+            <a href="/ban/${userId}" class="btn btn-ban">Ban</a>
+          </div>
+        `;
+        container.appendChild(row);
+      });
     });
-});
 
-socket.on("receive_message", function(data){
-    var div = document.createElement("div");
-    div.className = "message";
-    div.id = data.id;
+    socket.on("receive_message", function (data) {
+      appendMessage(data);
+    });
 
-    var badge = data.role === "admin" ? 
-        "<span class='admin-badge'>ADMIN</span>" : "";
+    socket.on("receive_file", function (data) {
+      appendFileMessage(data);
+    });
 
-    div.innerHTML =
-        "<b>"+data.sender+"</b>"+badge+
-        "<br>"+data.text+
-        "<div class='delete-btn' onclick='deleteMsg(\""+data.id+"\")'>Delete</div>";
+    socket.on("remove_message", function (data) {
+      const msg = document.getElementById(data.id);
+      if (msg) msg.remove();
+    });
 
-    var chat = document.getElementById("chat-box");
-    chat.appendChild(div);
+    function sendMessage() {
+      const input = document.getElementById("msg");
+      const text = input.value.trim();
 
-    // ✅ Scroll AFTER adding message
-    chat.scrollTo({
-    top: chat.scrollHeight,
-    behavior: "smooth"
-});
-});
+      if (!text) return;
 
-socket.on("receive_file", function(data){
+      socket.emit("send_message", {
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        reply: null
+      });
 
-    var div = document.createElement("div");
-    div.className = "message";
-
-    let content = "<b>" + data.sender + "</b>";
-
-    if(data.fileType.startsWith("image/")){
-        content += "<br><img src='" + data.fileData + "' style='max-width:220px;border-radius:12px;margin-top:8px;'>";
-    } else {
-        content += "<br><a href='" + data.fileData + "' download='" + data.fileName + "' style='color:#4facfe;font-weight:600;'>📁 " + data.fileName + "</a>";
+      input.value = "";
     }
 
-    div.innerHTML = content;
-
-    var chat = document.getElementById("chat-box");
-    chat.appendChild(div);
-
-    chat.scrollTo({
-        top: chat.scrollHeight,
-        behavior: "smooth"
-    });
-});
-
-socket.on("remove_message", function(data){
-    var msg=document.getElementById(data.id);
-    if(msg) msg.remove();
-});
-
-
-function sendMessage(){
-    var input=document.getElementById("msg");
-    if(input.value.trim()!=""){
-        socket.emit("send_message",{
-            text:input.value,
-            time:"",
-            reply:null
-        });
-        input.value="";
-    }
-}
-
-document.getElementById("msg").addEventListener("keydown", function(e){
-    if(e.key==="Enter"){
+    document.getElementById("msg").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
         e.preventDefault();
         sendMessage();
-    }
-});
+      }
+    });
 
-function sendFile() {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
+    function sendFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
 
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
         socket.emit("send_file", {
-            fileName: file.name,
-            fileType: file.type,
-            fileData: e.target.result
+          fileName: file.name,
+          fileType: file.type,
+          fileData: e.target.result
         });
-    };
+      };
+      reader.readAsDataURL(file);
+      fileInput.value = "";
+    }
 
-    reader.readAsDataURL(file);
-fileInput.value = "";
-}
-function deleteMsg(id){
-    socket.emit("delete_message",{id:id});
-}
+    function appendMessage(data) {
+      const div = document.createElement("div");
+      div.className = "message" + (data.role === "admin" ? " admin" : "");
+      div.id = data.id;
 
-window.addEventListener("beforeunload", function () {
-    navigator.sendBeacon("/logout");
-});
+      let replyHtml = "";
+      if (data.reply) {
+        replyHtml = `<div class="reply-box">Reply to: ${escapeHtml(data.reply)}</div>`;
+      }
 
+      div.innerHTML = `
+        ${replyHtml}
+        <strong>${escapeHtml(data.sender)}${data.role === "admin" ? " 👑" : ""}</strong>
+        <div>${escapeHtml(data.text || "")}</div>
+        <div class="meta">${escapeHtml(data.time || "")}</div>
+      `;
 
-</script>
+      const chat = document.getElementById("chat-box");
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
 
+    function appendFileMessage(data) {
+      const div = document.createElement("div");
+      div.className = "message" + (data.role === "admin" ? " admin" : "");
+
+      let content = `<strong>${escapeHtml(data.sender)}</strong><div class="file-preview">`;
+
+      if (data.fileType && data.fileType.startsWith("image/")) {
+        content += `<img src="${data.fileData}" alt="Uploaded image">`;
+      } else {
+        const label = data.originalName || data.fileName || "Download file";
+        content += `<a href="${data.fileData}" download="${escapeHtml(label)}">📁 ${escapeHtml(label)}</a>`;
+      }
+
+      content += `</div>`;
+      div.innerHTML = content;
+
+      const chat = document.getElementById("chat-box");
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text ?? "";
+      return div.innerHTML;
+    }
+  </script>
 </body>
 </html>
