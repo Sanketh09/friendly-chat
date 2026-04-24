@@ -91,7 +91,7 @@ def init_db():
     conn.close()
 
 
-def load_recent_messages(limit=50):
+def load_recent_messages(limit=500):
     conn = get_db()
     c = conn.cursor()
     c.execute("""
