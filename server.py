@@ -33,7 +33,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "txt", "doc", "docx"}
 MAX_MESSAGE_LENGTH = 1000
-MAX_FILE_SIZE = 5 * 1024 * 1024
+MAX_FILE_SIZE = 100 * 1024 * 1024
 
 online_users = {}
 
