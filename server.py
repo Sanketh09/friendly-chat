@@ -31,11 +31,21 @@ login_manager.login_view = "home"
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "txt", "doc", "docx"}
+MAX_MESSAGE_LENGTH = 1000
+MAX_FILE_SIZE = 5 * 1024 * 1024
+
+online_users = {}
+
 
 def get_db():
     conn = sqlite3.connect("users.db")
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def init_db():
@@ -68,7 +78,7 @@ def init_db():
     except:
         pass
 
-    c.execute("SELECT * FROM users WHERE username='admin'")
+    c.execute("SELECT * FROM users WHERE username = ?", ("admin",))
     if not c.fetchone():
         admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
         hashed = bcrypt.hashpw(admin_password.encode(), bcrypt.gensalt()).decode()
@@ -81,13 +91,24 @@ def init_db():
     conn.close()
 
 
-init_db()
+def load_recent_messages(limit=50):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, sender, role, text, time
+        FROM messages
+        ORDER BY rowid DESC
+        LIMIT ?
+    """, (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return [dict(row) for row in reversed(rows)]
 
 
 def broadcast_pending_updates():
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT id, username FROM users WHERE approved=0 AND role='user'")
+    c.execute("SELECT id, username FROM users WHERE approved = 0 AND role = 'user'")
     pending = [dict(row) for row in c.fetchall()]
     conn.close()
     socketio.emit("pending_update", pending)
@@ -104,7 +125,7 @@ class User(UserMixin):
 def load_user(user_id):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE id=?", (user_id,))
+    c.execute("SELECT * FROM users WHERE id = ?", (user_id,))
     user = c.fetchone()
     conn.close()
 
@@ -118,7 +139,7 @@ def home():
     if current_user.is_authenticated:
         conn = get_db()
         c = conn.cursor()
-        c.execute("SELECT approved, banned, role FROM users WHERE id=?", (current_user.id,))
+        c.execute("SELECT approved, banned, role FROM users WHERE id = ?", (current_user.id,))
         user = c.fetchone()
         conn.close()
 
@@ -136,10 +157,11 @@ def home():
         if user["role"] == "admin":
             conn = get_db()
             c = conn.cursor()
-            c.execute("SELECT id, username FROM users WHERE approved=0 AND role='user'")
+            c.execute("SELECT id, username FROM users WHERE approved = 0 AND role = 'user'")
             pending_users = c.fetchall()
             conn.close()
-            files = os.listdir(UPLOAD_FOLDER)
+
+            files = sorted(os.listdir(UPLOAD_FOLDER)) if os.path.exists(UPLOAD_FOLDER) else []
 
             return render_template(
                 "admin_panel.html",
@@ -161,18 +183,21 @@ def home():
         username = request.form["username"].strip()
         password = request.form["password"]
 
+        if not username or not password:
+            return render_template("request.html", error="Username and password are required.", success=None)
+
         conn = get_db()
         c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE username=?", (username,))
+        c.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = c.fetchone()
 
         if user:
             if user["banned"] == 1:
                 error = "You are banned by admin."
             elif not bcrypt.checkpw(password.encode(), user["password"].encode()):
-                error = "Wrong password"
+                error = "Wrong password."
             elif user["approved"] == 0:
-                error = "Account pending admin approval"
+                error = "Account pending admin approval."
             else:
                 login_user(User(user["id"], user["username"], user["role"]))
                 conn.close()
@@ -200,7 +225,7 @@ def approve_user(user_id):
 
     conn = get_db()
     c = conn.cursor()
-    c.execute("UPDATE users SET approved=1 WHERE id=?", (user_id,))
+    c.execute("UPDATE users SET approved = 1 WHERE id = ? AND role != 'admin'", (user_id,))
     conn.commit()
     conn.close()
 
@@ -216,7 +241,7 @@ def deny_user(user_id):
 
     conn = get_db()
     c = conn.cursor()
-    c.execute("DELETE FROM users WHERE id=? AND role != 'admin'", (user_id,))
+    c.execute("DELETE FROM users WHERE id = ? AND role != 'admin'", (user_id,))
     conn.commit()
     conn.close()
 
@@ -232,7 +257,7 @@ def ban_user(user_id):
 
     conn = get_db()
     c = conn.cursor()
-    c.execute("UPDATE users SET banned=1 WHERE id=? AND role != 'admin'", (user_id,))
+    c.execute("UPDATE users SET banned = 1 WHERE id = ? AND role != 'admin'", (user_id,))
     conn.commit()
     conn.close()
 
@@ -253,17 +278,16 @@ def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 
-online_users = {}
-
-
 @socketio.on("typing")
 def handle_typing(data):
-    emit("show_typing", data, broadcast=True)
+    if current_user.is_authenticated:
+        emit("show_typing", data, broadcast=True)
 
 
 @socketio.on("pin_message")
 def handle_pin(data):
-    emit("show_pinned", data, broadcast=True)
+    if current_user.is_authenticated:
+        emit("show_pinned", data, broadcast=True)
 
 
 @socketio.on("join")
@@ -273,7 +297,7 @@ def join():
 
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT approved, banned FROM users WHERE id=?", (current_user.id,))
+    c.execute("SELECT approved, banned FROM users WHERE id = ?", (current_user.id,))
     result = c.fetchone()
     conn.close()
 
@@ -282,6 +306,9 @@ def join():
 
     online_users[request.sid] = current_user.username
     emit("update_users", list(set(online_users.values())), broadcast=True)
+
+    recent_messages = load_recent_messages()
+    emit("chat_history", recent_messages)
 
 
 @socketio.on("disconnect")
@@ -299,16 +326,15 @@ def send_message(data):
 
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT banned, approved FROM users WHERE id=?", (current_user.id,))
+    c.execute("SELECT banned, approved FROM users WHERE id = ?", (current_user.id,))
     user = c.fetchone()
 
     if not user or user["banned"] == 1 or user["approved"] == 0:
         conn.close()
-        logout_user()
         return
 
     text = (data.get("text") or "").strip()
-    if not text:
+    if not text or len(text) > MAX_MESSAGE_LENGTH:
         conn.close()
         return
 
@@ -317,7 +343,7 @@ def send_message(data):
         "sender": current_user.username,
         "role": current_user.role,
         "text": text,
-        "time": data.get("time") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "time": data.get("time") or datetime.now().strftime("%H:%M"),
         "reply": data.get("reply")
     }
 
@@ -336,13 +362,17 @@ def delete_message(data):
     if not current_user.is_authenticated or current_user.role != "admin":
         return
 
+    message_id = data.get("id")
+    if not message_id:
+        return
+
     conn = get_db()
     c = conn.cursor()
-    c.execute("DELETE FROM messages WHERE id=?", (data["id"],))
+    c.execute("DELETE FROM messages WHERE id = ?", (message_id,))
     conn.commit()
     conn.close()
 
-    emit("remove_message", {"id": data["id"]}, broadcast=True)
+    emit("remove_message", {"id": message_id}, broadcast=True)
 
 
 @socketio.on("send_file")
@@ -352,8 +382,16 @@ def send_file(data):
 
     try:
         file_name = secure_filename(data["fileName"])
+        if not file_name or not allowed_file(file_name):
+            emit("file_error", {"error": "File type not allowed"})
+            return
+
         header, encoded = data["fileData"].split(",", 1)
         file_bytes = base64.b64decode(encoded)
+
+        if len(file_bytes) > MAX_FILE_SIZE:
+            emit("file_error", {"error": "File too large (max 5 MB)"})
+            return
 
         unique_name = f"{uuid.uuid4()}_{file_name}"
         file_path = os.path.join(UPLOAD_FOLDER, unique_name)
@@ -372,8 +410,8 @@ def send_file(data):
 
         emit("receive_file", payload, broadcast=True)
 
-    except Exception as e:
-        emit("file_error", {"error": str(e)})
+    except Exception:
+        emit("file_error", {"error": "File upload failed"})
 
 
 if __name__ == "__main__":
