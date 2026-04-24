@@ -1,419 +1,363 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Advanced Chat</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-
-<style>
-:root {
-    --primary: #6366f1;
-    --secondary: #8b5cf6;
-    --accent: #06b6d4;
-    --success: #10b981;
-    --danger: #ef4444;
-}
-
-/* BODY */
-body {
-    margin: 0;
-    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-    min-height: 100vh;
-    background: radial-gradient(circle at top left, #4f46e5, #0f172a 60%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* CONTAINER */
-.chat-container {
-    width: 100%;
-    max-width: 520px;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(25px);
-    border-radius: 22px;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-}
-
-/* HEADER */
-.chat-header {
-    padding: 18px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    font-size: 15px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-}
-
-.chat-header button {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: white;
-    transition: 0.2s ease;
-}
-
-.chat-header button:hover {
-    background: rgba(255,255,255,0.25);
-}
-
-.chat-header a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-/* ONLINE USERS */
-.online-users {
-    font-size: 12px;
-    padding: 8px 15px;
-    background: rgba(255,255,255,0.05);
-    color: #cbd5e1;
-}
-
-/* PINNED */
-.pinned {
-    padding: 10px 15px;
-    font-size: 12px;
-    background: rgba(234, 179, 8, 0.1);
-    border-left: 4px solid #facc15;
-    color: #facc15;
-}
-
-/* CHAT AREA */
-.chat-box {
-    flex: 1;
-    padding: 18px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-/* MESSAGE BASE */
-.message {
-    max-width: 75%;
-    padding: 14px 16px;
-    border-radius: 18px;
-    font-size: 14px;
-    line-height: 1.5;
-    animation: fadeIn 0.25s ease;
-    position: relative;
-    word-wrap: break-word;
-}
-
-/* YOUR MESSAGE */
-.me {
-    align-self: flex-end;
-    background: linear-gradient(135deg, var(--accent), var(--primary));
-    color: white;
-    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
-}
-
-/* OTHER MESSAGE */
-.other {
-    align-self: flex-start;
-    background: rgba(255,255,255,0.08);
-    color: #e2e8f0;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-/* ADMIN HIGHLIGHT */
-.message[style*="gold"] {
-    border: 2px solid gold;
-    box-shadow: 0 0 12px rgba(255,215,0,0.5);
-}
-
-/* REPLY */
-.reply-preview {
-    font-size: 11px;
-    opacity: 0.7;
-    border-left: 3px solid var(--accent);
-    padding-left: 8px;
-    margin-bottom: 6px;
-    color: #94a3b8;
-}
-
-/* TIME */
-.timestamp {
-    font-size: 10px;
-    opacity: 0.6;
-    margin-top: 6px;
-}
-
-/* INPUT AREA */
-.chat-input {
-    display: flex;
-    padding: 15px;
-    gap: 10px;
-    background: rgba(255,255,255,0.04);
-}
-
-.chat-input input {
-    flex: 1;
-    padding: 12px 16px;
-    border-radius: 25px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: white;
-    outline: none;
-}
-
-.chat-input input::placeholder {
-    color: #94a3b8;
-}
-
-.chat-input button {
-    border: none;
-    padding: 10px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    font-weight: 500;
-    transition: 0.2s ease;
-}
-
-.chat-input button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 15px rgba(139,92,246,0.5);
-}
-
-/* ACTION BUTTONS */
-.action-buttons {
-    font-size: 11px;
-    margin-top: 6px;
-    opacity: 0.6;
-}
-
-.action-buttons span {
-    cursor: pointer;
-    margin-right: 8px;
-    transition: 0.2s;
-}
-
-.action-buttons span:hover {
-    opacity: 1;
-    color: var(--accent);
-}
-
-/* TYPING */
-.typing {
-    font-size: 12px;
-    padding: 5px 15px;
-    color: #94a3b8;
-}
-
-/* ANIMATION */
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(5px);}
-    to {opacity: 1; transform: translateY(0);}
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-    .chat-container {
-        border-radius: 0;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat | Friendly Chat</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top left, #4f46e5, #0f172a 60%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-}
-</style>
-    
+    .chat-container {
+      width: 100%;
+      max-width: 560px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: rgba(15, 23, 42, 0.86);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .chat-header h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+    .chat-header a {
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .online-users {
+      padding: 10px 16px;
+      font-size: 13px;
+      background: rgba(255,255,255,0.06);
+      color: #cbd5e1;
+    }
+    .pinned {
+      min-height: 20px;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #fde68a;
+      background: rgba(250, 204, 21, 0.08);
+      border-left: 4px solid #facc15;
+    }
+    .typing {
+      min-height: 18px;
+      padding: 4px 16px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .reply-indicator {
+      display: none;
+      padding: 8px 16px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.06);
+      color: #cbd5e1;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .message {
+      max-width: 78%;
+      padding: 13px 15px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.45;
+      word-wrap: break-word;
+    }
+    .me {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      color: #fff;
+    }
+    .other {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #e2e8f0;
+    }
+    .admin-highlight {
+      border: 1px solid rgba(255,215,0,0.5);
+      box-shadow: 0 0 14px rgba(255,215,0,0.15);
+    }
+    .reply-preview {
+      font-size: 12px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      border-left: 3px solid #22d3ee;
+      color: #cbd5e1;
+    }
+    .timestamp {
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: 0.75;
+    }
+    .actions {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .actions span {
+      cursor: pointer;
+      margin-right: 10px;
+      color: #93c5fd;
+    }
+    .actions span:hover {
+      text-decoration: underline;
+    }
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 14px;
+      background: rgba(255,255,255,0.05);
+    }
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      outline: none;
+    }
+    .chat-input input[type="text"]::placeholder {
+      color: #94a3b8;
+    }
+    .chat-input button {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      font-weight: 700;
+    }
+    .hidden { display: none; }
+    .file-preview img {
+      max-width: 180px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+    .file-preview a {
+      color: #7dd3fc;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    @media (min-width: 768px) {
+      .chat-container {
+        height: 94vh;
+        max-height: 900px;
+        border-radius: 24px;
+      }
+    }
+  </style>
 </head>
-
-<body class="dark">
-
-<div class="chat-container">
-
+<body>
+  <div class="chat-container">
     <div class="chat-header">
-    <div>
-        Private Chat ({{ username }})
+      <h2>Private Chat — {{ username }}</h2>
+      <a href="/logout">Logout</a>
     </div>
-    <div>
-        <button onclick="toggleTheme()">🌙</button>
-        <a href="/logout" style="color:white;margin-left:15px;text-decoration:none;">
-            🚪 Logout
-        </a>
-    </div>
-</div>
 
-
-    <div class="online-users" id="users"></div>
-    <div class="pinned" id="pinned"></div>
+    <div class="online-users" id="users">Online: loading...</div>
+    <div class="pinned" id="pinned">No pinned message</div>
+    <div class="typing" id="typing"></div>
+    <div class="reply-indicator" id="reply-indicator"></div>
 
     <div class="chat-box" id="chat-box"></div>
-    <div class="typing" id="typing"></div>
 
     <div class="chat-input">
-    <input id="msg" placeholder="Type a message...">
-    <input type="file" id="fileInput" style="display:none" onchange="sendFile()">
-    <button onclick="document.getElementById('fileInput').click()">📎</button>
-    <button onclick="sendMessage()">Send</button>
+      <input id="msg" type="text" placeholder="Type a message...">
+      <input type="file" id="fileInput" class="hidden" onchange="sendFile()">
+      <button type="button" onclick="document.getElementById('fileInput').click()">📎</button>
+      <button type="button" onclick="sendMessage()">Send</button>
     </div>
-</div>
+  </div>
 
-<script>
-var socket = io();
-var username = "{{ username }}";
-var role = "{{ role }}";
-var replyTo = null;
+  <script>
+    const socket = io();
+    const username = "{{ username }}";
+    let replyTo = null;
 
-socket.on("connect", function() {
-    socket.emit("join");
-});
+    socket.on("connect", function () {
+      socket.emit("join");
+    });
 
+    socket.on("chat_history", function (messages) {
+      const box = document.getElementById("chat-box");
+      box.innerHTML = "";
+      messages.forEach(function (msg) {
+        appendMessage(msg);
+      });
+    });
 
-function getTime() {
-    const now = new Date();
-    return now.getHours().toString().padStart(2,'0') + ":" +
-           now.getMinutes().toString().padStart(2,'0');
-}
+    socket.on("update_users", function (users) {
+      document.getElementById("users").textContent =
+        "Online (" + users.length + "): " + users.join(", ");
+    });
 
-socket.on("update_users", function(users){
-    document.getElementById("users").innerHTML =
-    "Online (" + users.length + "): " + users.join(", ");
-});
+    socket.on("receive_message", function (data) {
+      appendMessage(data);
+    });
 
-socket.on("receive_message", function(data){
-    var div = document.createElement("div");
-    if (data.sender === username) {
-    div.className = "message me";
-} else {
-    div.className = "message other";
-}
+    socket.on("show_pinned", function (data) {
+      document.getElementById("pinned").textContent = "📌 Pinned: " + (data.text || "");
+    });
 
-// 👇 Add role highlight
-if (data.role === "admin") {
-    div.style.border = "2px solid gold";
-}
+    socket.on("show_typing", function (data) {
+      if (data.sender !== username) {
+        document.getElementById("typing").textContent = data.sender + " is typing...";
+        setTimeout(function () {
+          document.getElementById("typing").textContent = "";
+        }, 1200);
+      }
+    });
 
-    div.id = data.id;
+    socket.on("receive_file", function (data) {
+      appendFileMessage(data);
+    });
 
-    var replyHTML = "";
-    if(data.reply){
-        replyHTML = "<div class='reply-preview'>Reply to: " + data.reply + "</div>";
+    socket.on("file_error", function (data) {
+      alert(data.error || "Upload failed");
+    });
+
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
 
-    div.innerHTML =
-        replyHTML +
-        "<strong>" + data.sender + (data.role === "admin" ? " 👑" : "") + "</strong><br>" +
-        data.text +
-        "<div class='timestamp'>" + data.time + "</div>" +
-        "<div class='action-buttons'>" +
-        "<span onclick='setReply(\""+data.text+"\")'>↩ Reply</span> | " +
-        "<span onclick='pinMessage(\""+data.text+"\")'>📌 Pin</span>" +
-        "</div>";
+    function sendMessage() {
+      const input = document.getElementById("msg");
+      const text = input.value.trim();
+      if (!text) return;
 
-    document.getElementById("chat-box").appendChild(div);
-    document.getElementById("chat-box").scrollTop =
-        document.getElementById("chat-box").scrollHeight;
-});
+      socket.emit("send_message", {
+        text: text,
+        time: getTime(),
+        reply: replyTo
+      });
 
-function sendMessage(){
-    var input = document.getElementById("msg");
-
-    if(input.value.trim() !== ""){
-        socket.emit("send_message",{
-    text: input.value,
-    time: getTime(),
-    reply: replyTo
-});
-
-
-        replyTo = null;
-        input.value = "";
+      replyTo = null;
+      input.value = "";
+      input.placeholder = "Type a message...";
+      document.getElementById("reply-indicator").style.display = "none";
     }
-}
 
-document.getElementById("msg").addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    document.getElementById("msg").addEventListener("input", function () {
+      socket.emit("typing", { sender: username });
+    });
+
+    document.getElementById("msg").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
         e.preventDefault();
         sendMessage();
+      }
+    });
+
+    function setReply(text) {
+      replyTo = text;
+      const box = document.getElementById("reply-indicator");
+      box.style.display = "block";
+      box.textContent = "Replying to: " + text;
+      document.getElementById("msg").focus();
     }
-});
 
-function setReply(text){
-    replyTo = text;
-    document.getElementById("msg").placeholder =
-        "Replying to: " + text;
-}
-
-function pinMessage(text){
-    socket.emit("pin_message",{ text: text });
-}
-
-socket.on("show_pinned", function(data){
-    document.getElementById("pinned").innerHTML =
-        "📌 Pinned: " + data.text;
-});
-
-function sendTyping(){
-    socket.emit("typing",{ sender: username });
-}
-
-socket.on("show_typing", function(data){
-    if(data.sender !== username){
-        document.getElementById("typing").innerHTML =
-            data.sender + " is typing...";
-        setTimeout(()=>{ document.getElementById("typing").innerHTML=""; },1500);
+    function pinMessage(text) {
+      socket.emit("pin_message", { text: text });
     }
-});
 
-function toggleTheme(){
-    document.body.classList.toggle("dark");
-    document.body.classList.toggle("light");
-}
+    function sendFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
 
-function sendFile() {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
-
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
         socket.emit("send_file", {
-            sender: username,
-            fileName: file.name,
-            fileType: file.type,
-            fileData: e.target.result
+          fileName: file.name,
+          fileType: file.type,
+          fileData: e.target.result
         });
-    };
-
-    reader.readAsDataURL(file);
-fileInput.value = "";
-}
-
-socket.on("receive_file", function(data){
-    var div = document.createElement("div");
-    div.className = (data.sender === username) ? "message me" : "message other";
-
-    let content = "<strong>" + data.sender + "</strong><br>";
-
-    if(data.fileType.startsWith("image/")){
-        content += "<img src='" + data.fileData + "' style='max-width:150px;border-radius:8px;'>";
-    } else {
-        content += "<a href='" + data.fileData + "' download='" + data.fileName + "' style='color:#00bcd4;'>📁 " + data.fileName + "</a>";
+      };
+      reader.readAsDataURL(file);
+      fileInput.value = "";
     }
 
-    div.innerHTML = content;
+    function appendMessage(data) {
+      const div = document.createElement("div");
+      const mine = data.sender === username;
+      div.className = "message " + (mine ? "me" : "other") + (data.role === "admin" ? " admin-highlight" : "");
+      div.id = data.id;
 
-    document.getElementById("chat-box").appendChild(div);
-    document.getElementById("chat-box").scrollTop =
-        document.getElementById("chat-box").scrollHeight;
-});
+      let replyHtml = "";
+      if (data.reply) {
+        replyHtml = `<div class="reply-preview">Reply to: ${escapeHtml(data.reply)}</div>`;
+      }
 
+      div.innerHTML = `
+        ${replyHtml}
+        <strong>${escapeHtml(data.sender)}${data.role === "admin" ? " 👑" : ""}</strong><br>
+        ${escapeHtml(data.text || "")}
+        <div class="timestamp">${escapeHtml(data.time || "")}</div>
+        <div class="actions">
+          <span onclick="setReply(${JSON.stringify(data.text || "")})">↩ Reply</span>
+          <span onclick="pinMessage(${JSON.stringify(data.text || "")})">📌 Pin</span>
+        </div>
+      `;
 
-</script>
+      const box = document.getElementById("chat-box");
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
 
+    function appendFileMessage(data) {
+      const div = document.createElement("div");
+      const mine = data.sender === username;
+      div.className = "message " + (mine ? "me" : "other") + (data.role === "admin" ? " admin-highlight" : "");
+
+      let html = `<strong>${escapeHtml(data.sender)}${data.role === "admin" ? " 👑" : ""}</strong><div class="file-preview">`;
+
+      if (data.fileType && data.fileType.startsWith("image/")) {
+        html += `<img src="${data.fileData}" alt="Uploaded image">`;
+      } else {
+        const label = data.originalName || data.fileName || "File";
+        html += `<a href="${data.fileData}" download="${escapeHtml(label)}">📁 ${escapeHtml(label)}</a>`;
+      }
+
+      html += `</div>`;
+      div.innerHTML = html;
+
+      const box = document.getElementById("chat-box");
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text ?? "";
+      return div.innerHTML;
+    }
+  </script>
 </body>
 </html>
